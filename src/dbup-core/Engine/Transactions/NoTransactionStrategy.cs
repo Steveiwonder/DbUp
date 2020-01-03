@@ -16,7 +16,12 @@ namespace DbUp.Engine.Transactions
 
         public T Execute<T>(Func<Func<IDbCommand>, T> actionWithResult)
         {
-            return actionWithResult(() => connection.CreateCommand());
+            return actionWithResult(() =>
+            {
+                var command = connection.CreateCommand();
+                command.CommandTimeout = (int)TimeSpan.FromMilliseconds(30).TotalSeconds;
+                return command;
+            });
         }
 
         public void Initialise(IDbConnection dbConnection, IUpgradeLog upgradeLog)

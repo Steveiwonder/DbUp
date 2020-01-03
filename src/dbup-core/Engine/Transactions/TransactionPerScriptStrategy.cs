@@ -30,6 +30,7 @@ namespace DbUp.Engine.Transactions
                 var result = actionWithResult(() =>
                 {
                     var command = connection.CreateCommand();
+                    command.CommandTimeout = (int)TimeSpan.FromMilliseconds(30).TotalSeconds;
                     command.Transaction = transaction;
                     return command;
                 });

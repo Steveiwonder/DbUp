@@ -1,0 +1,32 @@
+name: .NET Core
+
+on: [workflow_dispatch]
+
+jobs:
+  build:
+    env:
+      VERSION_NUMBER: 1.0.${{github.run_number}}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core    
+      uses: actions/setup-dotnet@v1      
+      with:
+        dotnet-version: 2.2.x
+    - name: Install dependencies
+      run: dotnet restore ./src/dbup-sqlserver/dbup-sqlserver.csproj
+    - name: Build Library
+      run: dotnet build ./src/dbup-sqlserver/dbup-sqlserver.csproj --configuration Release --no-restore
+    - name: Publish Library
+      run: dotnet pack ./src/dbup-sqlserver/dbup-sqlserver.csproj --configuration Release --no-restore -o ./build/ /p:Version=${{env.VERSION_NUMBER}}
+    - name: Push Nuget
+       
+      run: dotnet nuget push ./build/dbup-sqlserver.${{env.VERSION_NUMBER}}.nupkg --api-key ${{secrets.NUGET_API_KEY}} --source https://api.nuget.org/v3/index.json
+    - name: Collect Artifact 
+      uses: actions/upload-artifact@v2
+      with:
+        name: DbUp.Extended.${{env.VERSION_NUMBER}}
+        path: ./build/dbup-sqlserver.${{env.VERSION_NUMBER}}.nupk
+
+    
